@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: portfolio-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "password123"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+    networks:
+      - portfolio-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.0
+    container_name: portfolio-keycloak
+    command: start-dev --import-realm
+
+    environment:
+      KEYCLOAK_ADMIN: jenish.admin@gmail.com
+      KEYCLOAK_ADMIN_PASSWORD: password
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://mysql:3306/keycloak_db
+      KC_DB_USERNAME: keycloak_user
+      KC_DB_PASSWORD: "password123"
+
+      KC_HTTP_RELATIVE_PATH: /
+
+    ports:
+      - "8081:8080"
+
+    volumes:
+      - ./keycloak-realm-export.json:/opt/keycloak/data/import/realm.json:ro
+      - ./keycloak-26.4.4/providers:/opt/keycloak/providers:ro
+      - keycloak_data:/opt/keycloak/data
+
+    networks:
+      - portfolio-network
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: portfolio-backend
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/portfolio_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: "password123"
+
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/portfolio-realm
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - portfolio-network
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    restart: unless-stopped
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: portfolio-frontend
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - portfolio-network
+
+    restart: unless-stopped
+
+
+
+networks:
+  portfolio-network:
+    driver: bridge
+
+
+volumes:
+  keycloak_data:
+  mysql_data:
+
+
