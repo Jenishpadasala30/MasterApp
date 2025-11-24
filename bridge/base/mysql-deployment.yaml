@@ -1,0 +1,55 @@
+#! mysql-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: mysql
+    namespace: portfolio-project
+    labels:
+        com.docker.compose.project: portfolio-project
+        com.docker.compose.service: mysql
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: portfolio-project
+            com.docker.compose.service: mysql
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: portfolio-project
+                com.docker.compose.service: mysql
+                com.docker.compose.network.portfolio-network: "true"
+        spec:
+            containers:
+                - name: portfolio-mysql
+                  image: mysql:8.0
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: MYSQL_ROOT_PASSWORD
+                      value: "password123"
+                  livenessProbe:
+                    exec:
+                        command: [mysqladmin ping -h localhost]
+                    periodSeconds: 10
+                    timeoutSeconds: 5
+                    failureThreshold: 5
+                  ports:
+                    - name: mysql-3306
+                      containerPort: 3306
+                    - name: mysql-33060
+                      containerPort: 33060
+                  volumeMounts:
+                    - name: docker-entrypoint-initdb-d-init-sql
+                      mountPath: /docker-entrypoint-initdb.d/init.sql
+                    - name: var-lib-mysql
+                      mountPath: /var/lib/mysql
+            volumes:
+                - name: docker-entrypoint-initdb-d-init-sql
+                  hostPath:
+                    path: /Users/jenishpadasala004477/Desktop/portfolio-project/init.sql
+                - name: var-lib-mysql
+                  persistentVolumeClaim:
+                    claimName: mysql-mysql-data

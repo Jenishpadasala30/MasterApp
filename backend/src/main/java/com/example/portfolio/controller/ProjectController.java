@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/projects")
-@CrossOrigin(origins = {"http://localhost:3000", "http://frontend:3000"})
+@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001", "http://frontend:3000" })
 public class ProjectController {
 
 	@Autowired
@@ -26,8 +26,8 @@ public class ProjectController {
 	@GetMapping("/{id}")
 	public ResponseEntity<Project> getProjectById(@PathVariable Long id) {
 		return projectService.getProjectById(id)
-			.map(project -> ResponseEntity.ok(project))
-			.orElse(ResponseEntity.notFound().build());
+				.map(project -> ResponseEntity.ok(project))
+				.orElse(ResponseEntity.notFound().build());
 	}
 
 	@PostMapping
@@ -52,4 +52,3 @@ public class ProjectController {
 		return ResponseEntity.noContent().build();
 	}
 }
-

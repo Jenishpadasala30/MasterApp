@@ -1,0 +1,9 @@
+#! keycloak-keycloak_data-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: keycloak-keycloak-data
+    namespace: portfolio-project
+spec:
+    storageClassName: "hostpath" # see docker/desktop-storage-provisioner
