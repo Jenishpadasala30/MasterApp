@@ -26,14 +26,15 @@ services:
       KEYCLOAK_ADMIN: jenish.admin@gmail.com
       KEYCLOAK_ADMIN_PASSWORD: password
       KC_DB: mysql
-      KC_DB_URL: jdbc:mysql://mysql:3306/keycloak_db
+      KC_DB_URL: "jdbc:mysql://mysql:3306/keycloak_db?allowPublicKeyRetrieval=true&useSSL=false"
       KC_DB_USERNAME: keycloak_user
       KC_DB_PASSWORD: "password123"
+      KC_HTTP_HOST: "0.0.0.0"
 
       KC_HTTP_RELATIVE_PATH: /
 
     ports:
-      - "8081:8080"
+      - "8082:8080"
 
     volumes:
       - ./keycloak-realm-export.json:/opt/keycloak/data/import/realm.json:ro
@@ -47,7 +48,7 @@ services:
       - "host.docker.internal:host-gateway"
 
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -96,7 +97,7 @@ services:
     container_name: portfolio-frontend
 
     ports:
-      - "3000:80"
+      - "3001:80"
 
     depends_on:
       - backend

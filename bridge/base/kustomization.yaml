@@ -1,0 +1,20 @@
+#! kustomization.yaml
+# Generated code, do not edit
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+    - 0-portfolio-project-namespace.yaml
+    - backend-deployment.yaml
+    - backend-expose.yaml
+    - backend-service.yaml
+    - frontend-deployment.yaml
+    - frontend-expose.yaml
+    - frontend-service.yaml
+    - keycloak-deployment.yaml
+    - keycloak-expose.yaml
+    - keycloak-keycloak_data-persistentVolumeClaim.yaml
+    - keycloak-service.yaml
+    - mysql-deployment.yaml
+    - mysql-expose.yaml
+    - mysql-mysql_data-persistentVolumeClaim.yaml
+    - portfolio-network-network-policy.yaml

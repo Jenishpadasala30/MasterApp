@@ -1,0 +1,85 @@
+#! keycloak-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: keycloak
+    namespace: portfolio-project
+    labels:
+        com.docker.compose.project: portfolio-project
+        com.docker.compose.service: keycloak
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: portfolio-project
+            com.docker.compose.service: keycloak
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: portfolio-project
+                com.docker.compose.service: keycloak
+                com.docker.compose.network.portfolio-network: "true"
+        spec:
+            containers:
+                - name: portfolio-keycloak
+                  image: quay.io/keycloak/keycloak:26.0.0
+                  imagePullPolicy: IfNotPresent
+                  args:
+                    - start-dev
+                    - --import-realm
+                  env:
+                    - name: KC_DB
+                      value: "mysql"
+                    - name: KC_DB_PASSWORD
+                      value: "password123"
+                    - name: KC_DB_URL
+                      value: "jdbc:mysql://mysql:3306/keycloak_db?allowPublicKeyRetrieval=true&useSSL=false"
+                    - name: KC_DB_USERNAME
+                      value: "keycloak_user"
+                    - name: KC_HTTP_RELATIVE_PATH
+                      value: "/"
+                    - name: KEYCLOAK_ADMIN
+                      value: "jenish.admin@gmail.com"
+                    - name: KEYCLOAK_ADMIN_PASSWORD
+                      value: "password"
+                  livenessProbe:
+                    exec:
+                        command:
+                            - /bin/sh
+                            - -c
+                            - exec 3<>/dev/tcp/127.0.0.1/8080
+                    periodSeconds: 30
+                    initialDelaySeconds: 60
+                    timeoutSeconds: 10
+                    failureThreshold: 5
+                  ports:
+                    - name: keycloak-8080
+                      containerPort: 8080
+                    - name: keycloak-8443
+                      containerPort: 8443
+                    - name: keycloak-9000
+                      containerPort: 9000
+                  volumeMounts:
+                    - name: opt-keycloak-data-import-realm-json
+                      mountPath: /opt/keycloak/data/import/realm.json
+                      readOnly: true
+                    - name: opt-keycloak-providers
+                      mountPath: /opt/keycloak/providers
+                      readOnly: true
+                    - name: opt-keycloak-data
+                      mountPath: /opt/keycloak/data
+            volumes:
+                - name: opt-keycloak-data-import-realm-json
+                  hostPath:
+                    path: /Users/jenishpadasala004477/Desktop/portfolio-project/keycloak-realm-export.json
+                  readOnly: true
+                - name: opt-keycloak-providers
+                  hostPath:
+                    path: /Users/jenishpadasala004477/Desktop/portfolio-project/keycloak-26.4.4/providers
+                  readOnly: true
+                - name: opt-keycloak-data
+                  persistentVolumeClaim:
+                    claimName: keycloak-keycloak-data

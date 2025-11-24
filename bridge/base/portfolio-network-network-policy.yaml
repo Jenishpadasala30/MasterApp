@@ -1,0 +1,24 @@
+#! portfolio-network-network-policy.yaml
+# Generated code, do not edit
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: portfolio-network-network-policy
+    namespace: portfolio-project
+spec:
+    podSelector:
+        matchLabels:
+            com.docker.compose.network.portfolio-network: "true"
+    policyTypes:
+        - Ingress
+        - Egress
+    ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                    com.docker.compose.network.portfolio-network: "true"
+    egress:
+        - to:
+            - podSelector:
+                matchLabels:
+                    com.docker.compose.network.portfolio-network: "true"

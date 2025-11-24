@@ -1,0 +1,42 @@
+#! backend-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: backend
+    namespace: portfolio-project
+    labels:
+        com.docker.compose.project: portfolio-project
+        com.docker.compose.service: backend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: portfolio-project
+            com.docker.compose.service: backend
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: portfolio-project
+                com.docker.compose.service: backend
+                com.docker.compose.network.portfolio-network: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: portfolio-backend
+                  image: portfolio-project-backend
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: SPRING_DATASOURCE_PASSWORD
+                      value: "password123"
+                    - name: SPRING_DATASOURCE_URL
+                      value: "jdbc:mysql://mysql:3306/portfolio_db?createDatabaseIfNotExist=true"
+                    - name: SPRING_DATASOURCE_USERNAME
+                      value: "root"
+                    - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+                      value: "http://keycloak:8080/realms/portfolio-realm"
+                  ports:
+                    - name: backend-8080
+                      containerPort: 8080
